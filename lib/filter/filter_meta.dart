@@ -135,7 +135,7 @@ class FilterMeta {
         'name': name,
         'description': description,
         'published': isPublic,
-        if (createdBy != null) 'createdById': createdBy?.id,
+        if (createdBy != null) 'createdById': createdBy?.uuid,
         if (createdAt != null) 'createdAt': createdAt?.toIso8601String(),
         if (updatedAt != null) 'updatedAt': updatedAt?.toIso8601String(),
         if (_icon != null) 'icon': _icon?.toJSON(),

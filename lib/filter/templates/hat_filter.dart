@@ -10,8 +10,7 @@ import 'package:open_mask/filter/templates/image_filter.dart';
 class HatFilter extends ImageFilter {
   /// Standard-Konstruktor.
   HatFilter(
-      {required super.id,
-      required super.uuid,
+      {required super.uuid,
       required super.meta,
       required super.config,
       super.parentUuid,

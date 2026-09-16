@@ -12,8 +12,7 @@ import 'package:open_mask/filter/templates/filter.dart';
 abstract class ImageFilter extends Filter {
   /// Standard-Konstruktor.
   ImageFilter(
-      {required super.id,
-      required super.uuid,
+      {required super.uuid,
       required super.meta,
       required super.type,
       required FilterConfig super.config,
@@ -43,7 +42,6 @@ abstract class ImageFilter extends Filter {
       final ImageFilter Function(
               {required FilterConfig config,
               required FilterImage? filterImage,
-              required int? id,
               required String uuid,
               required String? parentUuid,
               required FilterMeta meta})
@@ -56,7 +54,6 @@ abstract class ImageFilter extends Filter {
     FilterConfig filterConfig = FilterConfig.fromJSON(configJson);
 
     return filterCreator(
-        id: json['id'] as int?,
         uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         config: filterConfig,

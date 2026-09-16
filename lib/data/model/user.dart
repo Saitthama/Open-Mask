@@ -1,7 +1,9 @@
+import 'package:uuid/uuid.dart';
+
 class User {
   /// Standard-Konstruktor.
   const User(
-      {required this.id,
+      {required this.uuid,
       required this.username,
       required this.displayName,
       required this.name,
@@ -9,7 +11,7 @@ class User {
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory User.fromJson(final Map<String, dynamic> json) => User(
-      id: json['id'] as int,
+      uuid: json['uuid'] ?? const Uuid().v4(),
       username: json['username'],
       displayName: (json['displayName'] != null)
           ? json['displayName']
@@ -18,7 +20,7 @@ class User {
       email: json['email']);
 
   /// Die eindeutige id des Users.
-  final int id;
+  final String uuid;
 
   /// Die Email des Users.
   final String email;
@@ -35,7 +37,7 @@ class User {
 
   /// Methode zur JSON‑Serialisierung.
   Map<String, dynamic> toJSON() => {
-        'id': id,
+        'uuid': uuid,
         'username': username,
         'displayName': displayName,
         'email': email,

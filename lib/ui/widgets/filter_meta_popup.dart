@@ -28,7 +28,7 @@ class _FilterMetaPopupState extends State<FilterMetaPopup> {
   Widget build(final BuildContext context) {
     final theme = Theme.of(context);
     final bool isEditable =
-        widget.filter.meta.createdBy?.id == AuthService.instance.user?.id;
+        widget.filter.meta.createdBy?.uuid == AuthService.instance.user?.uuid;
     return Dialog(
       backgroundColor: theme.colorScheme.surface.withAlpha(220),
       insetPadding: const EdgeInsets.all(20),

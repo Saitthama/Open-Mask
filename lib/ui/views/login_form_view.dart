@@ -16,7 +16,7 @@ class LoginFormView extends StatefulWidget {
 class _LoginFormViewState extends State<LoginFormView> {
   final _formKey = GlobalKey<FormState>();
 
-  late TextEditingController _emailController;
+  late TextEditingController _usernameController;
 
   late TextEditingController _passwordController;
 
@@ -25,13 +25,13 @@ class _LoginFormViewState extends State<LoginFormView> {
   @override
   void initState() {
     super.initState();
-    _emailController = TextEditingController();
+    _usernameController = TextEditingController();
     _passwordController = TextEditingController();
   }
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
@@ -50,13 +50,11 @@ class _LoginFormViewState extends State<LoginFormView> {
               // Email-Adresse
               const SizedBox(height: 3),
               TextFormField(
-                  controller: _emailController,
-                  decoration: InputDecoration(hintText: 'E-Mail-Adresse'),
+                  controller: _usernameController,
+                  decoration: InputDecoration(hintText: 'Benutzername'),
                   validator: (value) {
-                    return (value == null ||
-                            value.isEmpty ||
-                            !value.contains('@'))
-                        ? 'Bitte gültige E-Mail eingeben'
+                    return (value == null || value.isEmpty)
+                        ? 'Bitte gültigen Benutzernamen eingeben'
                         : null;
                   }),
               const SizedBox(height: 20),
@@ -106,14 +104,14 @@ class _LoginFormViewState extends State<LoginFormView> {
         if (!_formKey.currentState!.validate()) {
           return;
         }
-        String email = _emailController.text;
+        String username = _usernameController.text;
         String password = _passwordController.text;
         if (_rememberMe) {
-          AutomaticLoginService.instance.saveLoginData(email, password);
+          AutomaticLoginService.instance.saveLoginData(username, password);
         } else {
           AutomaticLoginService.instance.clearLoginData();
         }
-        vm.login(email, password);
+        vm.login(username, password);
       }, 0.9),
     ]);
   }

@@ -33,7 +33,7 @@ class StorageService {
 
   /// Ordner für alle Dateien des aktuellen Nutzers.
   Directory get userDir => Directory(
-      '${_docsDir!.path}/users/${AuthService.instance.user?.id ?? ''}');
+      '${_docsDir!.path}/users/${AuthService.instance.user?.uuid ?? ''}');
 
   /// Ordner für die Photos des aktuellen Nutzers.
   Directory get userPhotosDir => Directory('${userDir.path}/photos');
@@ -207,6 +207,25 @@ class StorageService {
   /// Speichert rekursiv einen Filter im angegebenen [filterDir].
   Future<void> _saveFilterRecursively(final Directory filterDir,
       final Filter filter, final Map<String, dynamic> filterAsJSON) async {
+    if (filter is ImageFilter) {
+      final String imageName = filter.filterImage.filename;
+      await writeFilterImage(filterDir, filter.filterImage);
+      if (imageName != filter.filterImage.filename) {
+        (filterAsJSON['filterImage'] as Map<String, dynamic>)
+            .update('filename', (final current) => filter.filterImage.filename);
+      }
+    }
+
+    FilterImage? icon = filter.meta.icon;
+    if (icon != null) {
+      final String iconName = icon.filename;
+      await writeFilterImage(filterDir, icon);
+      if (iconName != icon.filename) {
+        (filterAsJSON['meta']['icon'] as Map<String, dynamic>)
+            .update('filename', (final current) => icon.filename);
+      }
+    }
+
     if (filter is CompositeFilter) {
       List<IFilter> filterList = filter.filterList;
       List<Map<String, dynamic>> filterListAsJSON = filterAsJSON['filterList'];
@@ -218,15 +237,6 @@ class StorageService {
         await _saveFilterRecursively(childDir, child, childAsJSON);
       }
       filterAsJSON.remove('filterList');
-    }
-
-    FilterImage? icon = filter.meta.icon;
-    if (icon != null) {
-      await writeFilterImage(filterDir, icon);
-    }
-
-    if (filter is ImageFilter) {
-      await writeFilterImage(filterDir, filter.filterImage);
     }
 
     File file = File('${filterDir.path}/filter.json');
@@ -311,6 +321,15 @@ class StorageService {
       }
     }
 
+    if (filter is ImageFilter) {
+      File imageFile = File(
+          '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage.mimeType?.extension}');
+      if (await imageFile.exists()) {
+        filter.filterImage.rawData =
+            await ImageService.loadImageFromFile(imageFile);
+      }
+    }
+
     FilterImage? icon = (filter as Filter).meta.icon;
     if (icon != null) {
       File iconFile = File(
@@ -318,14 +337,6 @@ class StorageService {
       if (await iconFile.exists()) {
         icon.rawData = await ImageService.loadImageFromFile(iconFile);
       }
-    }
-
-    if (filter is ImageFilter) {
-      File imageFile = File(
-          '${filterDir.path}/${filter.filterImage.filename}.${filter.filterImage.mimeType?.extension}');
-      if (!await imageFile.exists()) return;
-      filter.filterImage.rawData =
-          await ImageService.loadImageFromFile(imageFile);
     }
   }
 

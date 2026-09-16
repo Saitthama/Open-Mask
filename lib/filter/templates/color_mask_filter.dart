@@ -8,11 +8,7 @@ import 'package:open_mask/filter/templates/color_filter.dart';
 class ColorMaskFilter extends ColorFilter {
   /// Standard-Konstruktor.
   ColorMaskFilter(
-      {required super.id,
-      required super.uuid,
-      required super.meta,
-      super.parentUuid,
-      super.color})
+      {required super.uuid, required super.meta, super.parentUuid, super.color})
       : super(type: FilterType.colorMask) {
     meta.iconAsWidget = Image.asset('assets/images/filter/app_mask.png');
   }

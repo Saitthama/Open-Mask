@@ -43,10 +43,9 @@ class FilterFactory {
     switch (type) {
       case FilterType.composite:
         return CompositeFilter(
-            id: id, uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
+            uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
       case FilterType.mustache:
         return MustacheFilter(
-            id: id,
             uuid: newFilterUuid,
             meta: meta,
             config: config ?? FilterConfig(),
@@ -54,7 +53,6 @@ class FilterFactory {
             filterImage: null);
       case FilterType.hat:
         return HatFilter(
-            id: id,
             uuid: newFilterUuid,
             meta: meta,
             config: config ?? FilterConfig(),
@@ -62,7 +60,6 @@ class FilterFactory {
             filterImage: null);
       case FilterType.mask:
         return MaskFilter(
-            id: id,
             uuid: newFilterUuid,
             meta: meta,
             config: config ?? FilterConfig(),
@@ -70,7 +67,6 @@ class FilterFactory {
             filterImage: null);
       case FilterType.leftEye:
         return LeftEyeFilter(
-            id: id,
             uuid: newFilterUuid,
             meta: meta,
             config: config ?? FilterConfig(),
@@ -78,7 +74,6 @@ class FilterFactory {
             filterImage: null);
       case FilterType.rightEye:
         return RightEyeFilter(
-            id: id,
             uuid: newFilterUuid,
             meta: meta,
             config: config ?? FilterConfig(),
@@ -86,22 +81,21 @@ class FilterFactory {
             filterImage: null);
       case FilterType.rightColorEye:
         return RightEyeColorFilter(
-            id: id, uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
+            uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
       case FilterType.leftColorEye:
         return LeftEyeColorFilter(
-            id: id, uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
+            uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
       case FilterType.colorMask:
         return ColorMaskFilter(
-            id: id, uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
+            uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
       case FilterType.lips:
         return LipColorFilter(
-            id: id, uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
+            uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
       case FilterType.innerMouth:
         return MouthColorFilter(
-            id: id, uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
+            uuid: newFilterUuid, meta: meta, parentUuid: parentUuid);
       case FilterType.mouth:
         return MouthFilter(
-            id: id,
             uuid: newFilterUuid,
             meta: meta,
             config: config ?? FilterConfig(),
