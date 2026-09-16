@@ -6,8 +6,7 @@ import 'package:open_mask/filter/templates/filter.dart';
 abstract class ColorFilter extends Filter {
   /// Standard-Konstruktor.
   ColorFilter(
-      {required super.id,
-      required super.uuid,
+      {required super.uuid,
       required super.meta,
       required super.type,
       required super.parentUuid,
@@ -19,8 +18,7 @@ abstract class ColorFilter extends Filter {
   factory ColorFilter.fromJSON(
       final Map<String, dynamic> json,
       final ColorFilter Function(
-              {required int? id,
-              required String uuid,
+              {required String uuid,
               required FilterMeta meta,
               required Color color,
               required String? parentUuid})
@@ -28,7 +26,6 @@ abstract class ColorFilter extends Filter {
     Map<String, dynamic> colorJson = json['color'];
 
     return filterCreator(
-        id: json['id'] as int?,
         uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         color: Color.from(

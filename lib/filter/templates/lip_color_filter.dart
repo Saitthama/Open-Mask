@@ -12,11 +12,7 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 class LipColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
   LipColorFilter(
-      {required super.id,
-      required super.uuid,
-      required super.meta,
-      super.parentUuid,
-      super.color})
+      {required super.uuid, required super.meta, super.parentUuid, super.color})
       : super(type: FilterType.lips);
 
   /// Factory-Methode zur JSON‑Deserialisierung.

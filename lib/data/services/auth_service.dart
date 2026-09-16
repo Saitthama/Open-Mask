@@ -1,12 +1,14 @@
 import 'dart:convert';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:open_mask/data/constants.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:open_mask/data/model/user.dart';
 import 'package:open_mask/data/services/automatic_login_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 import 'package:open_mask/filter/filter_store.dart';
+import 'package:open_mask/main.dart';
+import 'package:uuid/uuid.dart';
 
 /// Service zur Durchführung von Authentifizierungsoperationen wie Registrierung und Anmeldung.
 class AuthService extends ChangeNotifier {
@@ -28,51 +30,45 @@ class AuthService extends ChangeNotifier {
   /// Aktuell eingeloggter [User].
   User? get user => _user;
 
-  /// Meldet den Benutzer an und überprüft, ob die E-Mail verifiziert wurde. Liefert true zurück, wenn die Anmeldung erfolgreich war.
-  Future<bool> login(final String email, final String password) async {
-    var url = Uri.https(
-      apiBaseUrl,
-      '$notAuth/login',
-    );
-    bool success = false;
-    try {
-      var response = await http.get(
-        url,
-        headers: {
-          'email': email,
-          'password': password,
-        },
-      );
+  /// Hilfsfunktion zum Hashen von Passwörtern
+  String _hashPassword(final String password) {
+    final bytes = utf8.encode(password);
+    return sha256.convert(bytes).toString();
+  }
 
-      if (response.statusCode == 404) {
-        SnackBarService.showMessage('User existiert nicht');
-        return false;
-      }
-      if (response.statusCode == 401) {
-        SnackBarService.showMessage('Passwort ist falsch!');
-        return false;
-      }
+  /// Meldet den Benutzer lokal an und liefert true zurück, wenn die Anmeldung erfolgreich war.
+  Future<bool> login(final String username, final String password) async {
+    // Lokale Nutzer einlesen
+    Map<String, dynamic> usersAsJson = await readUsers();
+    Map<String, dynamic> passwordsAsJson = await readPasswords();
 
-      final Map<String, dynamic> data =
-          jsonDecode(response.body) as Map<String, dynamic>;
-
-      _user = User.fromJson(data);
-      success = true;
-
-      _loggedIn = success;
-      notifyListeners();
-      FilterStore.instance
-          .initialize(); // asynchron im Hintergrund die Filter initialisieren
-      return success;
-    } catch (e) {
-      SnackBarService.showMessage('Fehler: $e');
+    if (!passwordsAsJson.containsKey(username) ||
+        !usersAsJson.containsKey(username)) {
+      SnackBarService.showMessage('User existiert nicht');
       return false;
     }
+
+    String passwordHash = passwordsAsJson[username];
+    String inputHash = _hashPassword(password);
+
+    if (inputHash != passwordHash) {
+      SnackBarService.showMessage('Passwort ist falsch!');
+      return false;
+    }
+
+    _user = User.fromJson(usersAsJson[username]);
+    bool success = true;
+
+    _loggedIn = success;
+    notifyListeners();
+    FilterStore.instance
+        .initialize(); // asynchron im Hintergrund die Filter initialisieren
+    return success;
   }
 
   /// Meldet den Benutzer ab.
-  /// Dafür wird das Property [user] gecleared, [loggedIn] auf false gesetzt,
-  /// [notifyListeners] zur Benachrichtigung der Änderungen aufgerufen und das Logout im Backend gemeldet.
+  /// Dafür wird das Property [user] gecleared, [loggedIn] auf false gesetzt und
+  /// [notifyListeners] zur Benachrichtigung der Änderungen aufgerufen.
   /// Außerdem werden die Nutzerdaten aus dem [AutomaticLoginService] gelöscht.
   Future<bool> logout() async {
     _loggedIn = false;
@@ -84,119 +80,70 @@ class AuthService extends ChangeNotifier {
     return !_loggedIn;
   }
 
-/*
-  Future<bool> loginFirebase(final String email, final String password) async {
-    UserCredential userCredential;
-    try {
-      userCredential = await AuthRepository.signIn(email, password);
-    } catch (e) {
-      SnackBarService.showMessage('Error: ${e.toString()}');
-      return false;
-    }
-
-    // Überprüfen, ob die E-Mail schon verifiziert wurde
-    if (userCredential.user!.emailVerified) {
-      return true;
-    }
-    // Verifizierungs-E-Mail erneut senden
-    await AuthRepository.sendEmailVerification(userCredential);
-
-    await AuthRepository.signOut();
-
-    SnackBarService.showMessage(
-        'E-Mail wurde noch nicht verifiziert! \nBitte überprüfen Sie ihren Posteingang!');
-    return false;
-  }
-  
- */
-
-  /// Registriert den Benutzer
+  /// Registriert den Benutzer lokal.
+  /// Liefert false zurück, wenn der Benutzer bereits existiert.
   Future<bool> register(final String email, final String password,
       final String username, final String name) async {
-    var url = Uri.https(apiBaseUrl, '$notAuth/register');
-    try {
-      var response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'email': email,
-          'password': password,
-          'username': username,
-          'name': name,
-        }),
-      );
-      SnackBarService.showMessage('Registrierung erfolgreich!');
-      return true;
-    } catch (e) {
-      SnackBarService.showMessage('Fehler: ${e.toString()}');
+    String uuid = const Uuid().v4();
+
+    User user = User(
+        uuid: uuid,
+        username: username,
+        displayName: username,
+        name: name,
+        email: email);
+
+    String passwordHash = _hashPassword(password);
+
+    // Lokale Nutzer einlesen
+    Map<String, dynamic> usersAsJson = await readUsers();
+    Map<String, dynamic> passwordsAsJson = await readPasswords();
+
+    // Überprüfen, ob Nutzername bereits existiert
+    if (usersAsJson.containsKey(username) ||
+        passwordsAsJson.containsKey(username)) {
+      SnackBarService.showMessage('Benutzername existiert bereits');
       return false;
     }
+
+    usersAsJson.putIfAbsent(username, user.toJSON);
+    passwordsAsJson.putIfAbsent(username, () => passwordHash);
+
+    // Nutzer und Passwörter speichern
+    await writeUsers(usersAsJson);
+    await writePasswords(passwordsAsJson);
+
+    SnackBarService.showMessage('Registrierung erfolgreich!');
+    return true;
   }
-/*
-  Future<bool> registerFirebase(final String email, final String password,
-      final String username, final String name) async {
-    try {
-      // Benutzer erstellen
-      UserCredential userCredential =
-          await AuthRepository.createUser(email, password, username, name);
 
-      // E-Mail-Verifizierungslink senden
-      await AuthRepository.sendEmailVerification(userCredential);
-
-      // Benutzer abmelden, bis er verifiziert ist
-      await AuthRepository.signOut();
-
-      // Bestätigung und Anforderung zur verifizierung anzeigen
-      SnackBarService.showMessage(
-          'Registrierung erfolgreich! \nBitte überprüfen Sie Ihr Postfach, um Ihre E-Mail zu verifizieren!');
-
-      return true;
-    } catch (e) {
-      SnackBarService.showMessage('Fehler: ${e.toString()}');
-      return false;
-    }
+  /// Liest die Benutzer aus dem [FlutterSecureStorage] ein.
+  Future<Map<String, dynamic>> readUsers() async {
+    String? usersAsString = await secureStorage.read(key: 'users');
+    Map<String, dynamic> usersAsJson = usersAsString == null
+        ? {}
+        : jsonDecode(usersAsString) as Map<String, dynamic>;
+    return usersAsJson;
   }
-  
 
-
-  Future<void> deleteAccount(BuildContext context) async {
-    try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final shouldDelete = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text("Account Löschen bestätigen"),
-            content: Text(
-                "Sind sie sich sicher das sie ihr Konto löschen möchten? Diese Aktion kann nicht rünkgängig gemacht werden."),
-            actions: [
-              TextButton(
-                onPressed: () => ctx.pop(false),
-                child: Text("Abbrechen"),
-              ),
-              TextButton(
-                onPressed: () => ctx.pop(true),
-                child: Text("Löschen", style: TextStyle(color: Colors.red)),
-              ),
-            ],
-          ),
-        );
-
-        if (shouldDelete == true) {
-          await user.delete();
-        }
-      }
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'requires-recent-login') {
-        print(
-            'The user must reauthenticate before this operation can be executed.');
-      } else {
-        print('Error: ${e.message}');
-      }
-    }
+  /// Liest die Passwörter aus dem [FlutterSecureStorage] ein.
+  Future<Map<String, dynamic>> readPasswords() async {
+    String? passwordsAsString = await secureStorage.read(key: 'passwords');
+    Map<String, dynamic> passwordsAsJson = passwordsAsString == null
+        ? {}
+        : jsonDecode(passwordsAsString) as Map<String, dynamic>;
+    return passwordsAsJson;
   }
-  
- */
+
+  /// Schreibt die Benutzer in den [FlutterSecureStorage].
+  Future<void> writeUsers(final Map<String, dynamic> usersAsJson) async {
+    await secureStorage.write(key: 'users', value: jsonEncode(usersAsJson));
+  }
+
+  /// Schreibt die Passwörter in den [FlutterSecureStorage].
+  Future<void> writePasswords(
+      final Map<String, dynamic> passwordsAsJson) async {
+    await secureStorage.write(
+        key: 'passwords', value: jsonEncode(passwordsAsJson));
+  }
 }

@@ -9,11 +9,7 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 class LeftEyeColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
   LeftEyeColorFilter(
-      {required super.id,
-      required super.uuid,
-      required super.meta,
-      super.parentUuid,
-      super.color})
+      {required super.uuid, required super.meta, super.parentUuid, super.color})
       : super(type: FilterType.leftColorEye) {
     meta.iconAsWidget = const Icon(
       Icons.remove_red_eye_rounded,

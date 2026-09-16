@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_mask/data/services/auth_service.dart';
 import 'package:open_mask/data/services/camera_service.dart';
@@ -13,6 +14,9 @@ import 'data/services/automatic_login_service.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
+
+/// Konstante für die Verwendung des [FlutterSecureStorage].
+const FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

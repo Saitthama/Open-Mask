@@ -9,16 +9,12 @@ import 'package:open_mask/filter/i_filter.dart';
 abstract class Filter implements IFilter {
   /// Standard-Konstruktor.
   Filter(
-      {required this.id,
-      required this.uuid,
+      {required this.uuid,
       required this.meta,
       required final config,
       required this.type,
       required this.parentUuid})
       : _config = config;
-
-  /// Eindeutige Datenbank-ID des Filters.
-  final int? id;
 
   /// Eine UUID zur eindeutigen Identifikation des Filters.
   final String uuid;
@@ -47,7 +43,6 @@ abstract class Filter implements IFilter {
 
   @override
   Map<String, dynamic> toJSON() => {
-        if (id != null) 'id': id,
         'uuid': uuid,
         'meta': meta.toJSON(),
         'config': config?.toJSON() ?? {},

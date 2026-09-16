@@ -1,8 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:open_mask/data/constants.dart';
 import 'package:open_mask/data/services/auth_service.dart';
 import 'package:open_mask/data/services/snackbar_service.dart';
 
@@ -24,7 +22,6 @@ class AccountService {
     /* TODO: Image Picker kompatible Version finden
     final ImagePicker _picker = ImagePicker();
 
-
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
       _imageFile = File(pickedFile.path);
@@ -39,33 +36,25 @@ class AccountService {
     if (AuthService.instance.user == null) {
       return false;
     }
-    int id = AuthService.instance.user!.id;
 
-    if (AuthService.instance.user?.id == null) {
+    // Lokale Nutzer einlesen
+    Map<String, dynamic> usersAsJson = await AuthService.instance.readUsers();
+    Map<String, dynamic> passwordsAsJson =
+        await AuthService.instance.readPasswords();
+
+    String username = AuthService.instance.user!.username;
+    if (!passwordsAsJson.containsKey(username) ||
+        !usersAsJson.containsKey(username)) {
+      SnackBarService.showMessage('User existiert nicht');
       return false;
     }
 
-    var url = Uri.https(
-      apiBaseUrl,
-      '$auth/delete/$id',
-    );
-    try {
-      http.Response response = await http.delete(url);
-      // print('deleteAccount (Benutzer: ${AuthService.instance.user!.id}): ${response.statusCode} ${response.reasonPhrase}');
+    usersAsJson.remove(username);
+    passwordsAsJson.remove(username);
 
-      if (response.statusCode == 404) {
-        SnackBarService.showMessage('Benutzer nicht gefunden!');
-        return false;
-      }
-      if (response.statusCode != 200) {
-        SnackBarService.showMessage(
-            'Account-Löschung fehlgeschlagen! (Status-Code: ${response.statusCode} ${response.reasonPhrase})');
-        return false;
-      }
-      return AuthService.instance.logout();
-    } catch (e) {
-      SnackBarService.showMessage('Fehler: $e');
-      return false;
-    }
+    AuthService.instance.writeUsers(usersAsJson);
+    AuthService.instance.writePasswords(passwordsAsJson);
+
+    return AuthService.instance.logout();
   }
 }

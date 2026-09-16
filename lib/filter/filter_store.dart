@@ -154,7 +154,7 @@ class FilterStore extends ChangeNotifier {
               ? filter.fork(createdByUser: false)
               : filter;
 
-      if (filter.meta.createdBy?.id == AuthService.instance.user?.id) {
+      if (filter.meta.createdBy?.uuid == AuthService.instance.user?.uuid) {
         addLocalFilter(filterToAdd);
       } else {
         addCommunityFilter(filterToAdd);
@@ -379,13 +379,13 @@ class FilterStore extends ChangeNotifier {
 
     List<IFilter> filters = await StorageService.instance.loadAllFilters();
     _localFilters.addAll(filters.where((final filter) =>
-        (filter as Filter).meta.createdBy?.id ==
-            AuthService.instance.user?.id ||
+        (filter as Filter).meta.createdBy?.uuid ==
+            AuthService.instance.user?.uuid ||
         filter.meta.createdBy == null));
     communityFilters = filters
         .where((final filter) =>
-            (filter as Filter).meta.createdBy?.id !=
-                AuthService.instance.user?.id &&
+            (filter as Filter).meta.createdBy?.uuid !=
+                AuthService.instance.user?.uuid &&
             filter.meta.createdBy != null)
         .toList();
   }

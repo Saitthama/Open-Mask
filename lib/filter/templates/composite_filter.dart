@@ -12,17 +12,12 @@ import 'package:open_mask/filter/templates/filter.dart';
 /// Wendet alle enthaltenen Filter auf dasselbe Gesicht an.
 class CompositeFilter extends Filter {
   /// Standard-Konstruktor.
-  CompositeFilter(
-      {required super.id,
-      required super.uuid,
-      required super.meta,
-      super.parentUuid})
+  CompositeFilter({required super.uuid, required super.meta, super.parentUuid})
       : super(config: null, type: FilterType.composite);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
   factory CompositeFilter.fromJSON(final Map<String, dynamic> json) {
     CompositeFilter compositeFilter = CompositeFilter(
-        id: json['id'] as int?,
         uuid: json['uuid'],
         meta: FilterMeta.fromJson(json['meta']),
         parentUuid: json['parentUUID'] as String?);

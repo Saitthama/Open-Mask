@@ -12,11 +12,7 @@ import 'package:open_mask/filter/templates/color_filter.dart'
 class MouthColorFilter extends om_color_filter.ColorFilter {
   /// Standard-Konstruktor.
   MouthColorFilter(
-      {required super.id,
-      required super.uuid,
-      required super.meta,
-      super.parentUuid,
-      super.color})
+      {required super.uuid, required super.meta, super.parentUuid, super.color})
       : super(type: FilterType.innerMouth);
 
   /// Factory-Methode zur JSON‑Deserialisierung.
