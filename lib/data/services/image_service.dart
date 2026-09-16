@@ -221,7 +221,7 @@ class ImageService {
 
   /// Liefert das Bild als neu skalierte Version zurück. <p>
   /// Das Seitenverhältnis wird beibehalten und die kleinere Seite (Breite/Höhe) wird auf die entsprechende gerundete [size] gesetzt. <br>
-  /// Das neu skalierte Bild wird mit JPG-Kodierung zurückgeliefert.</p>
+  /// Das neu skalierte Bild wird mit PNG-Kodierung zurückgeliefert.</p>
   static Future<Uint8List> resizeImage(
       final Uint8List data, final Size size) async {
     // Ausführung in einem separaten Isolate, um UI-Ruckler zu vermeiden
@@ -241,7 +241,7 @@ class ImageService {
     img.Image resized = img.copyResize(image, width: width, height: height);
 
     // 3. Zurück in Uint8List als JPG kodieren
-    return Uint8List.fromList(img.encodeJpg(resized));
+    return Uint8List.fromList(img.encodePng(resized));
   }
 
   /// Umwandlung eines [CameraImage] in ein [InputImage], damit es für das Google ML Kit lesbar ist (https://pub.dev/packages/google_mlkit_commons).
